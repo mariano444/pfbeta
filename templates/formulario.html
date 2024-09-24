@@ -6,34 +6,25 @@
     <title>Formulario de Publicación</title>
 </head>
 <body>
-    <h1>Completa el formulario de publicación</h1>
-    <form action="/formulario" method="POST">
-        <label for="usuario">Usuario:</label>
-        <input type="text" name="usuario" id="usuario"><br>
-        <label for="contrasena">Contraseña:</label>
-        <input type="password" name="contrasena" id="contrasena"><br>
-        <label for="tipo_vehiculo">Tipo de vehículo:</label>
-        <select name="tipo_vehiculo" id="tipo_vehiculo">
-            <option value="Auto/camioneta">Auto/camioneta</option>
-            <!-- Agrega más opciones si es necesario -->
-        </select><br>
-        <label for="anno">Año:</label>
-        <input type="text" name="anno" id="anno"><br>
-        <label for="carroceria">Carrocería:</label>
-        <input type="text" name="carroceria" id="carroceria"><br>
-        <label for="estado_vehiculo">Estado del vehículo:</label>
-        <input type="text" name="estado_vehiculo" id="estado_vehiculo"><br>
-        <label for="transmision">Transmisión:</label>
-        <input type="text" name="transmision" id="transmision"><br>
-        <label for="marca">Marca:</label>
-        <input type="text" name="marca" id="marca"><br>
-        <label for="modelo">Modelo:</label>
-        <input type="text" name="modelo" id="modelo"><br>
-        <label for="precio">Precio:</label>
-        <input type="text" name="precio" id="precio"><br>
-        <label for="millaje">Millaje:</label>
-        <input type="text" name="millaje" id="millaje"><br>
-        <button type="submit">Enviar</button>
+    <h1>Formulario de Publicación en Facebook Marketplace</h1>
+    <form action="/" method="POST">
+        <label for="api_username">Usuario de API:</label>
+        <input type="text" id="api_username" name="api_username" required><br>
+
+        <label for="api_password">Contraseña de API:</label>
+        <input type="password" id="api_password" name="api_password" required><br>
+
+        <label for="fb_username">Usuario de Facebook:</label>
+        <input type="text" id="fb_username" name="fb_username" required><br>
+
+        <label for="fb_password">Contraseña de Facebook:</label>
+        <input type="password" id="fb_password" name="fb_password" required><br>
+
+        <label for="num_publications">Número de Publicaciones:</label>
+        <input type="number" id="num_publications" name="num_publications" required><br>
+
+        <input type="submit" value="Enviar">
     </form>
 </body>
 </html>
+
