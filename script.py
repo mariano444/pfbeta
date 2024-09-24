@@ -1,22 +1,26 @@
+import os
+import time
+import random
+import cv2
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
+from image_editor import apply_professional_design  # Asumiendo que tienes este módulo
 
 class FacebookMarketplaceBot:
-    def __init__(self, fb_username, fb_password):
-        self.fb_username = fb_username
-        self.fb_password = fb_password
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
 
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument("--disable-notifications")
-        chrome_options.add_argument("--headless")  # Ejecutar en modo headless
+        chrome_options.add_argument("--headless")  # Modo headless para servidores sin GUI
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--disable-gpu")
 
         self.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
         self.wait = WebDriverWait(self.driver, 20)
@@ -25,16 +29,12 @@ class FacebookMarketplaceBot:
         try:
             self.driver.get("https://www.facebook.com/")
             email_field = self.wait.until(EC.visibility_of_element_located((By.NAME, "email")))
-            email_field.send_keys(self.fb_username)
+            email_field.send_keys(self.username)
             password_field = self.driver.find_element(By.NAME, "pass")
-            password_field.send_keys(self.fb_password)
+            password_field.send_keys(self.password)
             password_field.submit()
             self.wait.until(EC.url_matches("https://www.facebook.com/?sk=h_chr"))
             print("Inicio de sesión exitoso.")
-        except TimeoutException:
-            print("Tiempo de espera agotado durante el inicio de sesión.")
-        except NoSuchElementException:
-            print("No se encontró el campo de correo electrónico o contraseña.")
         except Exception as e:
             print(f"Error durante el inicio de sesión: {e}")
 
@@ -42,8 +42,8 @@ class FacebookMarketplaceBot:
         try:
             self.driver.get("https://www.facebook.com/marketplace/create/vehicle")
             print("Redireccionado a Marketplace.")
-
-            # Selección aleatoria del año y precio
+            
+            # Selección aleatoria del año
             random_year = random.randint(2008, 2014)
             options = {
                 "Tipo de vehículo": "Auto/camioneta",
@@ -65,25 +65,11 @@ class FacebookMarketplaceBot:
                 else:
                     print(f"No se encontró el campo '{field_name}'.")
 
-            description = ("¿Buscas un auto usado? \n"
-                           "¡Contáctanos ahora y descubre nuestras excelentes promociones! \n"
-                           "Por qué elegir nuestra financiación:\n"
-                           "Cuotas fijas y accesibles para que planifiques con tranquilidad.\n"
-                           "Flexibilidad para adaptar la cuota según tus necesidades.\n"
-                           "Financiamiento del 100% para tu auto usado.\n"
-                           "Proceso de financiación sencillo, solo con tu DNI.\n"
-                           "Aceptamos autos y motos usadas con la mejor tasación.\n"
-                           "#AutosUsados #OfertasDeAutos #FinanciamientoFlexible #CuotasFijas #CompraInteligente #TasaciónJusta")
-            self.fill_description(description)
+            self.fill_description("¡Auto usado en cuotas fijas y accesibles!")
 
             self.upload_photos_from_folder("fotos_autos", "autos_modificados")
 
             self.click_button("Siguiente")
-
-        except TimeoutException:
-            print("Tiempo de espera agotado durante la carga de Marketplace.")
-        except NoSuchElementException:
-            print("No se encontró el campo necesario en el formulario.")
         except Exception as e:
             print(f"Error al completar el formulario: {e}")
 
@@ -91,7 +77,7 @@ class FacebookMarketplaceBot:
         try:
             field = self.driver.find_element(By.XPATH, f"//*[contains(text(), '{keyword}')]/following::input[1]")
             return field
-        except NoSuchElementException:
+        except:
             return None
 
     def fill_description(self, description):
@@ -100,46 +86,22 @@ class FacebookMarketplaceBot:
             description_field.clear()
             description_field.send_keys(description)
             print("Descripción completada automáticamente.")
-        except TimeoutException:
-            print("Tiempo de espera agotado para el campo de descripción.")
         except Exception as e:
             print(f"Error al completar la descripción: {e}")
 
     def select_option(self, category, option):
         try:
             label_element = self.wait.until(EC.visibility_of_element_located((By.XPATH, f"//label[contains(@aria-label, '{category}')]")))
-            self.driver.execute_script(
-                "arguments[0].scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });",
-                label_element)
-            self.driver.execute_script("arguments[0].click();", label_element)
+            self.driver.execute_script("arguments[0].scrollIntoView();", label_element)
+            label_element.click()
 
             option_element = self.wait.until(EC.element_to_be_clickable((By.XPATH, f"//span[text()='{option}']")))
-            self.driver.execute_script(
-                "arguments[0].scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });",
-                option_element)
-            time.sleep(1)
-
-            action = ActionChains(self.driver)
-            action.move_to_element(option_element).click().perform()
+            option_element.click()
             print(f"Opción '{option}' seleccionada en '{category}'.")
-        except TimeoutException:
-            print(f"No se pudo encontrar la opción '{option}' en '{category}'.")
         except Exception as e:
             print(f"Error al seleccionar la opción '{option}' en '{category}': {e}")
 
-    def click_button(self, button_text):
-        try:
-            button = self.wait.until(EC.element_to_be_clickable((By.XPATH, f"//span[text()='{button_text}']")))
-            self.driver.execute_script("arguments[0].scrollIntoView();", button)
-            time.sleep(2)
-            button.click()
-            print(f"Botón '{button_text}' clicado.")
-        except TimeoutException:
-            print(f"No se pudo encontrar el botón '{button_text}'.")
-        except Exception as e:
-            print(f"Error al hacer clic en el botón '{button_text}': {e}")
-
-    def upload_photos_from_folder(self, folder_name, modified_folder_name, max_photos=10):
+    def upload_photos_from_folder(self, folder_name, modified_folder_name, max_photos=5):
         try:
             folder_path = os.path.join(os.getcwd(), folder_name)
             modified_folder_path = os.path.join(os.getcwd(), modified_folder_name)
@@ -147,70 +109,49 @@ class FacebookMarketplaceBot:
                 os.makedirs(modified_folder_path)
             photos = os.listdir(folder_path)
             random.shuffle(photos)
-            num_photos_to_upload = min(max_photos, len(photos))
-            photo_count = 0
-            for index, photo in enumerate(photos):
-                if photo_count >= num_photos_to_upload:
-                    break
-                photo_path = os.path.join(folder_path, photo)
-                modified_photo_path = os.path.join(modified_folder_path, f"modified_{photo}")
-                if index == 0:
-                    self.modify_and_save_photo(photo_path, modified_photo_path)  # Usa la función desde el módulo externo
-                else:
-                    modified_photo_path = photo_path
+            for photo in photos[:max_photos]:
+                original_path = os.path.join(folder_path, photo)
+                modified_path = os.path.join(modified_folder_path, f"modified_{photo}")
+                self.modify_and_save_photo(original_path, modified_path)
                 input_field = self.driver.find_element(By.XPATH, "//input[@type='file']")
-                input_field.send_keys(modified_photo_path)
-                print(f"Fotografía {photo} cargada.")
-                photo_count += 1
-                time.sleep(1)
-                photos.remove(photo)
-                self.driver.execute_script('arguments[0].value=""', input_field)
-        except Exception as e:
-            print(f"Error al cargar las fotos: {e}")
-
+                input_field.send_keys(modified_path)
+                print(f"Foto {photosubida correctamente.") except Exception as e: print(f"Error al cargar las fotos: {e}")
     def modify_and_save_photo(self, original_path, modified_path):
-        """
-        Modifica una foto aplicando un texto con fondo y un diseño profesional,
-        y guarda la imagen modificada en la ruta especificada.
-        """
-        try:
-            original_image = cv2.imread(original_path)
-            if original_image is None:
-                raise FileNotFoundError(f"No se pudo leer la imagen: {original_path}")
+    try:
+        original_image = cv2.imread(original_path)
+        if original_image is None:
+            raise FileNotFoundError(f"No se pudo leer la imagen: {original_path}")
+        modified_image = apply_professional_design(original_image)
+        cv2.imwrite(modified_path, modified_image)
+    except Exception as e:
+        print(f"Error al modificar y guardar la imagen: {e}")
 
-            # Aplicar mejoras visuales
-            modified_image = apply_professional_design(original_image)
-            cv2.imwrite(modified_path, modified_image)
-        except Exception as e:
-            print(f"Error al modificar y guardar la imagen: {e}")
+def click_button(self, button_text):
+    try:
+        button = self.wait.until(EC.element_to_be_clickable((By.XPATH, f"//span[text()='{button_text}']")))
+        button.click()
+        print(f"Botón '{button_text}' clicado.")
+    except Exception as e:
+        print(f"Error al hacer clic en el botón '{button_text}': {e}")
 
-    def close_browser(self):
-        self.driver.quit()
-        print("Navegador cerrado.")
-
-
-if __name__ == "__main__":
-    # Leer los datos desde el archivo
-    with open("datos.txt", "r") as f:
-        fb_username, fb_password, num_posts = f.read().split(",")
-
-    # Crear la instancia del bot y realizar las publicaciones
+def close_browser(self):
+    self.driver.quit()
+    print("Navegador cerrado.")
+if name == "main": with open("datos.txt", "r") as f: fb_username, fb_password, num_posts = f.read().strip().split(",")
     bot = FacebookMarketplaceBot(fb_username, fb_password)
-    bot.login()
+bot.login()
 
-    for i in range(int(num_posts)):
-        random_price = random.choice(range(60000, 150001, 20000))
-        form_data = {
-            "Marca": "¡Excelente oportunidad! - Autos usados en cuotas fijas",
-            "Modelo": "y accesibles",
-            "Precio": str(random_price),
-            "Millaje": "300"
-        }
-        bot.complete_form(form_data)
-        time.sleep(10)
+for i in range(int(num_posts)):
+    form_data = {
+        "Marca": "¡Excelente oportunidad! - Autos usados en cuotas fijas",
+        "Modelo": "y accesibles",
+        "Precio": str(random.choice(range(60000, 150001, 20000))),
+        "Millaje": "300"
+    }
+    bot.complete_form(form_data)
+    time.sleep(15)  # Esperar entre publicaciones
+    bot.click_button("Publicar")
+    print(f"Publicación {i + 1} completada.")
+    time.sleep(30)  # Esperar antes de la siguiente publicación
 
-    bot.close_browser()
-
-    # Eliminar el archivo de credenciales después de la ejecución
-    os.remove("datos.txt")
-    print("Script completado y credenciales eliminadas.")
+bot.close_browser()
