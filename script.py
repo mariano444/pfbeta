@@ -1,23 +1,24 @@
-import os
-import time
-import random
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from selenium.webdriver.common.action_chains import ActionChains
-import cv2
-from image_editor import apply_professional_design  # Asumiendo que tienes este módulo
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 
 class FacebookMarketplaceBot:
     def __init__(self, fb_username, fb_password):
         self.fb_username = fb_username
         self.fb_password = fb_password
+
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument("--disable-notifications")
-        self.driver = webdriver.Chrome(options=chrome_options)
+        chrome_options.add_argument("--headless")  # Ejecutar en modo headless
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+
+        self.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
         self.wait = WebDriverWait(self.driver, 20)
 
     def login(self):
