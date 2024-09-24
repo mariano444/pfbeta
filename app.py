@@ -5,7 +5,7 @@ import requests
 
 app = Flask(__name__)
 
-API_URL = "http://127.0.0.1:5000"  # Cambia la URL de la API según sea necesario
+API_URL = "https://pf-ee7p.onrender.com/"  # Cambia la URL de la API según sea necesario
 
 # Página principal con formulario
 @app.route("/", methods=["GET", "POST"])
